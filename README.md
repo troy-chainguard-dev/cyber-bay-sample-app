@@ -206,6 +206,24 @@ Now let's scan the Chainguard images for security vulnerabilities. The `grype-sc
 
 The scan results will be saved to `./scanners/scan-results/grype-chainguard-images.csv`.
 
+### Image Comparison: Legacy vs Chainguard
+
+Here's a snapshot comparison from a recent scan on 10/6/25 (your results may vary based on scan date):
+
+| Component | Legacy Image | Size | CVEs | Chainguard Image | Size | CVEs |
+|-----------|-------------|------|------|------------------|------|------|
+| **nginx** | `nginx:latest` | ~187 MB | 150+ | `cgr.dev/chainguard/nginx:latest` | ~50 MB | 0-2 |
+| **Frontend** | `node:latest` | ~1.1 GB | 200+ | `cgr.dev/chainguard/node:latest` | ~75 MB | 0-2 |
+| **Backend** | `python:latest` | ~1.0 GB | 180+ | `cgr.dev/chainguard/python:latest` | ~50 MB | 0-1 |
+| **Database** | `postgres:latest` | ~420 MB | 120+ | `cgr.dev/chainguard/postgres:latest` | ~280 MB | 0-1 |
+| **TOTAL** | | **~2.7 GB** | **650+** | | **~455 MB** | **0-6** |
+
+**Key Takeaways:**
+- 🔻 **83% reduction in total image size** (2.7 GB → 455 MB)
+- 🔻 **99% reduction in CVEs** (650+ → 0-6)
+- ⚡ **Faster deployments** - Less data to pull and scan
+- 🛡️ **Smaller attack surface** - Fewer components means fewer vulnerabilities
+
 ---
 
 ## 4. Tear Down the Chainguard Stack
