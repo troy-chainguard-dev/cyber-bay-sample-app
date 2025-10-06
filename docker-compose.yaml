@@ -1,12 +1,14 @@
-version: "3.8"
-
 services:
   frontend:
+    image: cyber-bay-frontend:latest
+    container_name: legacy-frontend
     build: ./frontend
     depends_on:
       - backend
 
   backend:
+    image: cyber-bay-backend:latest
+    container_name: legacy-backend
     build: ./backend
     ports:
       - "5000:5000"
@@ -19,6 +21,7 @@ services:
 
   db:
     image: postgres:latest
+    container_name: legacy-postgres
     restart: always
     environment:
       POSTGRES_DB: chaiku
@@ -30,6 +33,8 @@ services:
       - "5432:5432"
 
   nginx:
+    image: cyber-bay-nginx:latest
+    container_name: legacy-nginx
     build:
       context: .
       dockerfile: ./nginx/Dockerfile

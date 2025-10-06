@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # === CONFIGURATION ===
-TARGET_IMAGES=("chaiku-nginx-cg" "chaiku-frontend-cg" "chaiku-backend-cg" "cgr.dev/chainguard/postgres")
+TARGET_IMAGES=("cyber-bay-nginx-cg" "cyber-bay-frontend-cg" "cyber-bay-backend-cg" "cgr.dev/chainguard/postgres")
 
 # Create output directory if it doesn't exist
 OUTPUT_DIR="./scanners/scan-results"
