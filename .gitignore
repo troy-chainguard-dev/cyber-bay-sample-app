@@ -143,3 +143,7 @@ scanners/scan-results/*
 
 # Commands File
 commands
+# Draw.io source files
+*.drawio
+*.drawio.bkp
+*.drawio.dtmp

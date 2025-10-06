@@ -25,7 +25,7 @@ We will walk through and build this app two different ways:
 
 ### Prerequisites
 - Terminal access
-- [Docker](https://www.docker.com/) (image runtime)
+- [Docker](https://www.docker.com/) (container runtime)
 - [Docker Compose](https://docs.docker.com/compose/) (multi-container build and orchestration)
 - [grype](https://github.com/anchore/grype) (for scanning container images)
 - Clone this directory and `cd` into it from your terminal: 
@@ -61,7 +61,8 @@ First we will use docker compose to build the app using the legacy images. The f
 
 ```bash
 docker compose up -d --build
-
+```
+```
 # Expected output:
 [+] Running 8/8
  ✔ backend Built                           0.0s
@@ -79,7 +80,8 @@ docker compose up -d --build
 - To ensure the containers are running we can run the following from a terminal:
 ```bash
 docker ps
-
+```
+```
 # Expected output:
 CONTAINER ID   IMAGE                       STATUS         PORTS                    NAMES
 9da02e3b2f76   cyber-bay-nginx:latest      Up 3 minutes   0.0.0.0:80->80/tcp       legacy-nginx
@@ -154,7 +156,8 @@ We will now use Docker Compose to create our Chainguard version of the app by po
 
 ```bash
 docker compose -f docker-compose-chainguard.yaml up -d --build
-
+```
+```
 # Expected output:
 [+] Running 8/8
  ✔ backend Built                           0.0s
@@ -172,7 +175,8 @@ docker compose -f docker-compose-chainguard.yaml up -d --build
 - To ensure the Chainguard-based containers are running we can run the following from a terminal and see all of the **cg** tags on our images and container names:
 ```bash
 docker ps
-
+```
+```
 # Expected output:
 CONTAINER ID   IMAGE                                STATUS         PORTS                    NAMES
 476abfd23815   cyber-bay-nginx-cg:latest            Up 5 minutes   0.0.0.0:80->80/tcp       cg-nginx
