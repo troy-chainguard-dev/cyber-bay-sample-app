@@ -1,13 +1,13 @@
 services:
   frontend:
-    image: cyber-bay-frontend:latest
+    image: cyber-bay-frontend-legacy:latest
     container_name: legacy-frontend
     build: ./frontend
     depends_on:
       - backend
 
   backend:
-    image: cyber-bay-backend:latest
+    image: cyber-bay-backend-legacy:latest
     container_name: legacy-backend
     build: ./backend
     ports:
@@ -33,7 +33,7 @@ services:
       - "5432:5432"
 
   nginx:
-    image: cyber-bay-nginx:latest
+    image: cyber-bay-nginx-legacy:latest
     container_name: legacy-nginx
     build:
       context: .
