@@ -245,6 +245,127 @@ After scanning both versions, open the CSV files to review the outputs to compar
 
 This highlights the value of using Chainguard's minimal, secure-by-default images like those from Chainguard.
 
+---
+
+## Migrating From Upstream to Chainguard
+
+One of the key benefits of Chainguard images is how straightforward it is to migrate from upstream images. Let's walk through the Python backend as an example to see what's involved.
+
+### Legacy Dockerfile (Upstream Python)
+
+```dockerfile
+FROM python:latest
+
+WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "wsgi.py"]
+```
+
+**Issues with this approach:**
+- ❌ Large image size (~1GB+) with full OS packages
+- ❌ Build tools remain in final image
+- ❌ High CVE count from unnecessary dependencies
+- ❌ Runs as root by default
+
+### Chainguard Dockerfile (Hardened Python)
+
+```dockerfile
+FROM cgr.dev/chainguard/python:latest-dev AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN python -m venv /app/venv && \ 
+    /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+FROM cgr.dev/chainguard/python:latest
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/venv/bin:$PATH"
+
+COPY . .
+COPY --from=builder /app/venv /venv
+
+ENTRYPOINT [ "python", "wsgi.py" ]
+```
+
+**Benefits of this approach:**
+- ✅ Minimal image size (~50MB) with only runtime dependencies
+- ✅ Multi-stage build separates build tools from runtime
+- ✅ Zero to near-zero CVEs
+- ✅ Runs as non-root user by default
+- ✅ Uses virtual environment for dependency isolation
+
+### Key Migration Steps
+
+1. **Use multi-stage builds** - Separate build environment (`-dev` image) from runtime
+2. **Implement virtual environments** - Chainguard's minimal images require proper dependency isolation
+3. **Copy only what's needed** - Use `COPY --from=builder` to get only the venv
+4. **Update base image references** - Change `python:latest` to `cgr.dev/chainguard/python:latest`
+
+This pattern applies to most language migrations - build in one stage with tools, run in a minimal stage with only runtime dependencies.
+
+---
+
+## Wrap Up: How Chainguard Achieves Zero to Near-Zero CVEs
+
+### The Chainguard Approach
+
+Chainguard achieves dramatically lower CVE counts through several key principles:
+
+**1. Minimalism by Design**
+- Only essential runtime components included
+- No package managers, shells, or build tools in final images
+- Smaller image = smaller attack surface
+
+**2. Distroless Architecture**
+- No traditional Linux distribution (no apt, yum, etc.)
+- Only application and its runtime dependencies
+- Eliminates vulnerabilities from unused system packages
+
+**3. Proactive Security**
+- Daily automated rebuilds with latest patches
+- Continuous vulnerability scanning and remediation
+- CVEs fixed before they're widely disclosed
+
+**4. Software Bill of Materials (SBOM)**
+- Every image includes a cryptographically signed SBOM
+- Complete transparency of what's in your containers
+- Easy compliance and audit trails
+
+**5. Non-Root by Default**
+- All images run as non-privileged users
+- Reduces blast radius of potential exploits
+- Follows principle of least privilege
+
+### Key Benefits Summary
+
+| Benefit | Impact |
+|---------|--------|
+| 🛡️ **Security** | 99% reduction in CVEs compared to upstream images |
+| 📦 **Size** | 80-90% smaller images mean faster deployments |
+| ⚡ **Performance** | Less to scan, pull, and start = better CI/CD times |
+| 🔒 **Compliance** | Built-in SBOMs simplify auditing and governance |
+| 🔄 **Maintenance** | Daily updates ensure you're always patched |
+| 💰 **Cost** | Reduced storage, bandwidth, and security incident costs |
+
+### Why It Matters
+
+In production environments, every CVE represents:
+- Potential security incidents requiring investigation
+- Compliance violations and audit findings
+- Emergency patching and deployment cycles
+- Risk to your customers and reputation
+
+**Chainguard Images eliminate these concerns** by providing secure-by-default containers that are continuously maintained, minimally scoped, and transparently documented.
+
+---
+
 ## Extra Credit
 
 ~Compare image sizes, SBOMs, and provenance~
