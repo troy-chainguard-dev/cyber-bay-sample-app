@@ -34,29 +34,28 @@ We will walk through and build this app two different ways and then use a Python
 git clone https://github.com/troy-chainguard-dev/cyber-bay-sample-app.git && cd cyber-bay-sample-app
 ```
 
-### Python Virtual Environment Setup (Recommended)
+### Python Virtual Environment Setup
 
 Create and activate a Python virtual environment for the scanning tools:
 
-```bash
-# Create virtual environment
+```
 python3 -m venv venv
-
-# Activate virtual environment
-# On macOS/Linux:
+```
+For Mac/Linux, activate the virtual environment:
+```
 source venv/bin/activate
+```
 
-# On Windows:
-# venv\Scripts\activate
-
-# Install Python dependencies
+For Windows:
+```
+venv\Scripts\activate
+```
+Install Python dependencies:
+```
 pip install -r scanners/requirements.txt
 ```
 
-**Note:** You'll need to activate the virtual environment each time you want to run the scanner:
-```bash
-source venv/bin/activate  # macOS/Linux
-```
+**Note:** The environment will need to be activated to run the scanners in later steps so we can work within the virtual Python environment for the remainder of the steps 
 
 ---
 
@@ -133,11 +132,12 @@ You should see the following response: `Hooray! The API works.`
 
 Now let's scan our running containers for security vulnerabilities:
 
-```bash
-# Activate your virtual environment if you haven't already
+Activate your virtual environment if you haven't already
+```
 source venv/bin/activate  # macOS/Linux
-
+```
 # Run the scanner
+```
 python3 scanners/scan-and-report.py
 ```
 
@@ -241,19 +241,7 @@ Now let's scan the Chainguard images for security vulnerabilities:
 python3 scanners/scan-and-report.py
 ```
 
-**Output files:**
-- CSV: `./scanners/scan-results/grype-chainguard-images.csv`
-- Excel: `./scanners/scan-results/grype-chainguard-images.xlsx`
-- Comparison: `./scanners/scan-results/comparison-report-[timestamp].xlsx`
-
-The script automatically:
-- ✅ Scans all running containers
-- ✅ Categorizes as Legacy or Chainguard
-- ✅ Generates CSV reports
-- ✅ Creates formatted Excel reports with charts
-- ✅ Generates comparison report (if both Legacy and Chainguard scans exist)
-
-The comparison report shows:
+This will generate the same reports as above (CSV and Excel), plus an additional **comparison report** that shows:
 - 📊 Executive summary with reduction metrics and % improvements
 - 📈 Visual comparison of vulnerability distributions
 - 💡 Key takeaways highlighting security wins
