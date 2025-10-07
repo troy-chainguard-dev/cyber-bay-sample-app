@@ -86,8 +86,9 @@ First we will use docker compose to build the app using the legacy images. The f
 ```bash
 docker compose up -d --build
 ```
+
+Expected output:
 ```
-# Expected output:
 [+] Running 8/8
  ✔ backend Built                           0.0s
  ✔ frontend Built                          0.0s
@@ -99,14 +100,15 @@ docker compose up -d --build
  ✔ Container legacy-nginx Started          0.3s
 ```
 
-### Verify It’s Running
+### Verify It's Running
 
-- To ensure the containers are running we can run the following from a terminal:
+To ensure the containers are running:
 ```bash
 docker ps
 ```
+
+Expected output:
 ```
-# Expected output:
 CONTAINER ID   IMAGE                       STATUS         PORTS                    NAMES
 9da02e3b2f76   cyber-bay-nginx:latest      Up 3 minutes   0.0.0.0:80->80/tcp       legacy-nginx
 26e1462fabb0   cyber-bay-frontend:latest   Up 3 minutes                            legacy-frontend
@@ -114,30 +116,31 @@ CONTAINER ID   IMAGE                       STATUS         PORTS                 
 22f51e9cdff9   postgres:latest             Up 3 minutes   0.0.0.0:5432->5432/tcp   legacy-postgres
 ```
 
-- Open [http://localhost:80](http://localhost:80) in your browser to view the website. You should see the following:
+Open [http://localhost:80](http://localhost:80) in your browser to view the website:
 
 <div align="center">
   <img src="img/website.png" alt="Course Registration Website" style="border-radius: 15px;"/>
 </div>
 
-- Check that the backend API works by running the following from a terminal:
+Check that the backend API works:
 
 ```bash
 curl http://localhost:5000
 ```
 
-You should see the following response: `Hooray! The API works.`
+You should see the response: `Hooray! The API works.`
 
 ### Scan Legacy Images for CVEs
 
 Now let's scan our running containers for security vulnerabilities:
 
-Activate your virtual environment if you haven't already
+Activate your virtual environment if you haven't already (macOS/Linux):
+```bash
+source venv/bin/activate
 ```
-source venv/bin/activate  # macOS/Linux
-```
-# Run the scanner
-```
+
+Run the scanner:
+```bash
 python3 scanners/scan-and-report.py
 ```
 
@@ -197,8 +200,9 @@ We will now use Docker Compose to create our Chainguard version of the app by po
 ```bash
 docker compose -f docker-compose-chainguard.yaml up -d --build
 ```
+
+Expected output:
 ```
-# Expected output:
 [+] Running 8/8
  ✔ backend Built                           0.0s
  ✔ frontend Built                          0.0s
@@ -212,12 +216,13 @@ docker compose -f docker-compose-chainguard.yaml up -d --build
 
 ### Verify It's Running
 
-- To ensure the Chainguard-based containers are running we can run the following from a terminal and see all of the **cg** tags on our images and container names:
+To ensure the Chainguard-based containers are running (notice the **cg** tags on container names):
 ```bash
 docker ps
 ```
+
+Expected output:
 ```
-# Expected output:
 CONTAINER ID   IMAGE                                STATUS         PORTS                    NAMES
 476abfd23815   cyber-bay-nginx-cg:latest            Up 5 minutes   0.0.0.0:80->80/tcp       cg-nginx
 4a12bab4e30b   cyber-bay-frontend-cg:latest         Up 5 minutes                            cg-frontend
@@ -225,9 +230,9 @@ CONTAINER ID   IMAGE                                STATUS         PORTS        
 949fdcf98c9d   cgr.dev/chainguard/postgres:latest   Up 5 minutes   0.0.0.0:5432->5432/tcp   cg-postgres
 ```
 
-- Open [http://localhost:80](http://localhost:80)
+Open [http://localhost:80](http://localhost:80) in your browser.
 
-- Check the API:
+Check the API:
 
 ```bash
 curl http://localhost:5000/
@@ -273,34 +278,6 @@ To clean everything, including volumes:
 ```bash
 docker compose down -v
 ```
-
----
-## Compare Results
-
-After scanning both versions, you can review and compare the results:
-
-All reports are automatically generated in `./scanners/scan-results/`:
-
-### CSV Files
-Raw vulnerability data in CSV format:
-- `grype-legacy-images.csv` - Legacy image vulnerabilities
-- `grype-chainguard-images.csv` - Chainguard image vulnerabilities
-
-### Excel Reports
-Enhanced reports with visual formatting:
-- `grype-legacy-images.xlsx` - Formatted legacy report
-- `grype-chainguard-images.xlsx` - Formatted Chainguard report
-- `comparison-report-[timestamp].xlsx` - Side-by-side comparison
-
-The Excel reports provide:
-- 📊 Visual charts and graphs
-- 🎨 Color-coded severity indicators
-- 🔗 Hyperlinked CVE IDs for easy research
-- 📈 Executive summary dashboards
-- 🐳 Per-image breakdowns
-- 🔍 Automatic filtering and sorting
-
-This makes it easy to demonstrate the security value of Chainguard's minimal, secure-by-default images.
 
 ---
 
