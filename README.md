@@ -312,6 +312,60 @@ This pattern applies to most language migrations - build in one stage with tools
 
 ---
 
+## Wrap Up: How Chainguard Achieves Zero to Near-Zero CVEs
+
+### The Chainguard Approach
+
+Chainguard achieves dramatically lower CVE counts through several key principles:
+
+**1. Minimalism by Design**
+- Only essential runtime components included
+- No package managers, shells, or build tools in final images
+- Smaller image = smaller attack surface
+
+**2. Distroless Architecture**
+- No traditional Linux distribution (no apt, yum, etc.)
+- Only application and its runtime dependencies
+- Eliminates vulnerabilities from unused system packages
+
+**3. Proactive Security**
+- Daily automated rebuilds with latest patches
+- Continuous vulnerability scanning and remediation
+- CVEs fixed before they're widely disclosed
+
+**4. Software Bill of Materials (SBOM)**
+- Every image includes a cryptographically signed SBOM
+- Complete transparency of what's in your containers
+- Easy compliance and audit trails
+
+**5. Non-Root by Default**
+- All images run as non-privileged users
+- Reduces blast radius of potential exploits
+- Follows principle of least privilege
+
+### Key Benefits Summary
+
+| Benefit | Impact |
+|---------|--------|
+| 🛡️ **Security** | 99% reduction in CVEs compared to upstream images |
+| 📦 **Size** | 80-90% smaller images mean faster deployments |
+| ⚡ **Performance** | Less to scan, pull, and start = better CI/CD times |
+| 🔒 **Compliance** | Built-in SBOMs simplify auditing and governance |
+| 🔄 **Maintenance** | Daily updates ensure you're always patched |
+| 💰 **Cost** | Reduced storage, bandwidth, and security incident costs |
+
+### Why It Matters
+
+In production environments, every CVE represents:
+- Potential security incidents requiring investigation
+- Compliance violations and audit findings
+- Emergency patching and deployment cycles
+- Risk to your customers and reputation
+
+**Chainguard Images eliminate these concerns** by providing secure-by-default containers that are continuously maintained, minimally scoped, and transparently documented.
+
+---
+
 ## Extra Credit
 
 ~Compare image sizes, SBOMs, and provenance~
