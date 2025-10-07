@@ -9,7 +9,7 @@
 
 This is a sample web application showcasing a multi-tier architecture using **Node.js**, **Python (Flask)**, **PostgreSQL**, and **nginx**.
 
-We will walk through and build this app two different ways:
+We will walk through and build this app two different ways and then use a Python script with grype to compare the two deployments:
 - **Legacy version** with traditional upstream container images.
 - **Chainguard version** using minimal, secure-by-default, zero to near-zero CVE container images.
 
@@ -134,6 +134,10 @@ You should see the following response: `Hooray! The API works.`
 Now let's scan our running containers for security vulnerabilities:
 
 ```bash
+# Activate your virtual environment if you haven't already
+source venv/bin/activate  # macOS/Linux
+
+# Run the scanner
 python3 scanners/scan-and-report.py
 ```
 
@@ -141,30 +145,17 @@ This single command will:
 - ✅ Detect all running containers from `docker compose`
 - ✅ Use Grype to scan each container image for known CVEs
 - ✅ Generate CSV reports with vulnerability data
-- ✅ Auto-generate formatted Excel reports (if openpyxl is installed)
+- ✅ Auto-generate formatted Excel reports with charts and formatting
 
-**Output files:**
-- CSV: `./scanners/scan-results/grype-legacy-images.csv`
-- Excel: `./scanners/scan-results/grype-legacy-images.xlsx` (with charts and formatting)
-
-#### Excel Report Features (Optional but Recommended)
-
-To enable enhanced Excel reports with charts, color-coding, and multiple worksheets:
-
-```bash
-# One-time setup - install Python dependencies
-pip install -r ./scanners/requirements.txt
-```
-
-The Excel reports include:
-- 📊 Executive summary with statistics and charts
-- 🎨 Color-coded severity levels (Critical=Red, High=Orange, etc.)
-- 🔗 Hyperlinked CVE IDs (click to view details on NIST NVD)
-- 📑 Separate worksheets for each severity level
-- 🐳 Per-image breakdown sheets
-- 🔍 Auto-filtering and sortable columns
-
-Without openpyxl, you'll still get CSV reports that work great!
+**Output files in `./scanners/scan-results/`:**
+- `grype-legacy-images.csv` - Raw vulnerability data
+- `grype-legacy-images.xlsx` - Formatted Excel report with:
+  - Executive summary with statistics and pie charts
+  - Color-coded severity levels (Critical=Red, High=Orange, etc.)
+  - Hyperlinked CVE IDs (click to view details on NIST NVD)
+  - Separate worksheets for each severity level
+  - Per-image breakdown sheets (including images with 0 vulnerabilities)
+  - Auto-filtering and sortable columns
 
 ---
 
@@ -267,8 +258,6 @@ The comparison report shows:
 - 📈 Visual comparison of vulnerability distributions
 - 💡 Key takeaways highlighting security wins
 
-This makes it easy to demonstrate the security value of Chainguard images to stakeholders.
-
 ### Image Comparison: Legacy vs Chainguard
 
 Here's a snapshot comparison from a recent scan on 10/6/25 (your results may vary based on scan date):
@@ -309,7 +298,7 @@ Raw vulnerability data in CSV format:
 - `grype-legacy-images.csv` - Legacy image vulnerabilities
 - `grype-chainguard-images.csv` - Chainguard image vulnerabilities
 
-### Excel Reports (if openpyxl installed)
+### Excel Reports
 Enhanced reports with visual formatting:
 - `grype-legacy-images.xlsx` - Formatted legacy report
 - `grype-chainguard-images.xlsx` - Formatted Chainguard report
