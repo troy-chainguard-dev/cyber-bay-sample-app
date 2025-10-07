@@ -365,7 +365,3 @@ In production environments, every CVE represents:
 **Chainguard Images eliminate these concerns** by providing secure-by-default containers that are continuously maintained, minimally scoped, and transparently documented.
 
 ---
-
-## Extra Credit
-
-~Compare image sizes, SBOMs, and provenance~
