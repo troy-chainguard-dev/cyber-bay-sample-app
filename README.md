@@ -28,9 +28,34 @@ We will walk through and build this app two different ways:
 - [Docker](https://www.docker.com/) (container runtime)
 - [Docker Compose](https://docs.docker.com/compose/) (multi-container build and orchestration)
 - [grype](https://github.com/anchore/grype) (for scanning container images)
+- Python 3.7+ (for vulnerability reporting)
 - Clone this directory and `cd` into it from your terminal: 
 ```bash
 git clone https://github.com/troy-chainguard-dev/cyber-bay-sample-app.git && cd cyber-bay-sample-app
+```
+
+### Python Virtual Environment Setup (Recommended)
+
+Create and activate a Python virtual environment for the scanning tools:
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+
+# On Windows:
+# venv\Scripts\activate
+
+# Install Python dependencies
+pip install -r scanners/requirements.txt
+```
+
+**Note:** You'll need to activate the virtual environment each time you want to run the scanner:
+```bash
+source venv/bin/activate  # macOS/Linux
 ```
 
 ---
@@ -106,16 +131,40 @@ You should see the following response: `Hooray! The API works.`
 
 ### Scan Legacy Images for CVEs
 
-Now let's scan our running containers for security vulnerabilities. The `grype-scan.sh` script will:
-- Detect all running containers from `docker compose`
-- Use Grype to scan each container image for known CVEs (Common Vulnerabilities and Exposures)
-- Generate a detailed CSV report with vulnerability information
+Now let's scan our running containers for security vulnerabilities:
 
 ```bash
-./scanners/grype-scan.sh
+python3 scanners/scan-and-report.py
 ```
 
-The scan results will be saved to `./scanners/scan-results/grype-legacy-images.csv`.
+This single command will:
+- ✅ Detect all running containers from `docker compose`
+- ✅ Use Grype to scan each container image for known CVEs
+- ✅ Generate CSV reports with vulnerability data
+- ✅ Auto-generate formatted Excel reports (if openpyxl is installed)
+
+**Output files:**
+- CSV: `./scanners/scan-results/grype-legacy-images.csv`
+- Excel: `./scanners/scan-results/grype-legacy-images.xlsx` (with charts and formatting)
+
+#### Excel Report Features (Optional but Recommended)
+
+To enable enhanced Excel reports with charts, color-coding, and multiple worksheets:
+
+```bash
+# One-time setup - install Python dependencies
+pip install -r ./scanners/requirements.txt
+```
+
+The Excel reports include:
+- 📊 Executive summary with statistics and charts
+- 🎨 Color-coded severity levels (Critical=Red, High=Orange, etc.)
+- 🔗 Hyperlinked CVE IDs (click to view details on NIST NVD)
+- 📑 Separate worksheets for each severity level
+- 🐳 Per-image breakdown sheets
+- 🔍 Auto-filtering and sortable columns
+
+Without openpyxl, you'll still get CSV reports that work great!
 
 ---
 
@@ -195,16 +244,30 @@ curl http://localhost:5000/
 
 ### Scan Chainguard Images for CVEs
 
-Now let's scan the Chainguard images for security vulnerabilities. The `grype-scan.sh` script will:
-- Detect all running containers from `docker compose`
-- Use Grype to scan each Chainguard container image for known CVEs
-- Generate a detailed CSV report showing the security improvements
+Now let's scan the Chainguard images for security vulnerabilities:
 
 ```bash
-./scanners/grype-scan.sh
+python3 scanners/scan-and-report.py
 ```
 
-The scan results will be saved to `./scanners/scan-results/grype-chainguard-images.csv`.
+**Output files:**
+- CSV: `./scanners/scan-results/grype-chainguard-images.csv`
+- Excel: `./scanners/scan-results/grype-chainguard-images.xlsx`
+- Comparison: `./scanners/scan-results/comparison-report-[timestamp].xlsx`
+
+The script automatically:
+- ✅ Scans all running containers
+- ✅ Categorizes as Legacy or Chainguard
+- ✅ Generates CSV reports
+- ✅ Creates formatted Excel reports with charts
+- ✅ Generates comparison report (if both Legacy and Chainguard scans exist)
+
+The comparison report shows:
+- 📊 Executive summary with reduction metrics and % improvements
+- 📈 Visual comparison of vulnerability distributions
+- 💡 Key takeaways highlighting security wins
+
+This makes it easy to demonstrate the security value of Chainguard images to stakeholders.
 
 ### Image Comparison: Legacy vs Chainguard
 
@@ -237,13 +300,30 @@ docker compose down -v
 ---
 ## Compare Results
 
-After scanning both versions, open the CSV files to review the outputs to compare:
+After scanning both versions, you can review and compare the results:
 
-- Total CVEs
-- Severity levels (Critical, High, etc.)
-- Image size and dependency differences
+All reports are automatically generated in `./scanners/scan-results/`:
 
-This highlights the value of using Chainguard's minimal, secure-by-default images like those from Chainguard.
+### CSV Files
+Raw vulnerability data in CSV format:
+- `grype-legacy-images.csv` - Legacy image vulnerabilities
+- `grype-chainguard-images.csv` - Chainguard image vulnerabilities
+
+### Excel Reports (if openpyxl installed)
+Enhanced reports with visual formatting:
+- `grype-legacy-images.xlsx` - Formatted legacy report
+- `grype-chainguard-images.xlsx` - Formatted Chainguard report
+- `comparison-report-[timestamp].xlsx` - Side-by-side comparison
+
+The Excel reports provide:
+- 📊 Visual charts and graphs
+- 🎨 Color-coded severity indicators
+- 🔗 Hyperlinked CVE IDs for easy research
+- 📈 Executive summary dashboards
+- 🐳 Per-image breakdowns
+- 🔍 Automatic filtering and sorting
+
+This makes it easy to demonstrate the security value of Chainguard's minimal, secure-by-default images.
 
 ---
 

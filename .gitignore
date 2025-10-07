@@ -147,3 +147,7 @@ commands
 *.drawio
 *.drawio.bkp
 *.drawio.dtmp
+
+# Python virtual environment
+venv/
+.venv/
