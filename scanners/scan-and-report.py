@@ -40,6 +40,7 @@ class VulnerabilityScanner:
         "cyber-bay-nginx-cg",
         "cyber-bay-frontend-cg",
         "cyber-bay-backend-cg",
+        "cyber-bay-db-cg",
         "cgr.dev/chainguard"
     ]
     
