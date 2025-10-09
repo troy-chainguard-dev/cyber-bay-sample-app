@@ -99,7 +99,7 @@ Expected output:
  ✔ frontend Built                          0.0s
  ✔ nginx Built                             0.0s
  ✔ Network cyber-bay-sample-app_default    0.1s
- ✔ Container legacy-postgres Started       0.3s
+ ✔ Container legacy-db Started             0.3s
  ✔ Container legacy-backend Started        0.3s
  ✔ Container legacy-frontend Started       0.3s
  ✔ Container legacy-nginx Started          0.3s
@@ -114,11 +114,11 @@ docker ps
 
 Expected output:
 ```
-CONTAINER ID   IMAGE                       STATUS         PORTS                    NAMES
-9da02e3b2f76   cyber-bay-nginx:latest      Up 3 minutes   0.0.0.0:80->80/tcp       legacy-nginx
-26e1462fabb0   cyber-bay-frontend:latest   Up 3 minutes                            legacy-frontend
-3cc427943561   cyber-bay-backend:latest    Up 3 minutes   0.0.0.0:5000->5000/tcp   legacy-backend
-22f51e9cdff9   postgres:latest             Up 3 minutes   0.0.0.0:5432->5432/tcp   legacy-postgres
+CONTAINER ID   IMAGE                              STATUS         PORTS                    NAMES
+9da02e3b2f76   cyber-bay-nginx-legacy:latest      Up 3 minutes   0.0.0.0:80->80/tcp       legacy-nginx
+26e1462fabb0   cyber-bay-frontend-legacy:latest   Up 3 minutes                            legacy-frontend
+3cc427943561   cyber-bay-backend-legacy:latest    Up 3 minutes   0.0.0.0:5000->5000/tcp   legacy-backend
+22f51e9cdff9   cyber-bay-db-legacy:latest         Up 3 minutes   0.0.0.0:5432->5432/tcp   legacy-db
 ```
 
 Open [http://localhost:80](http://localhost:80) in your browser to view the website:
@@ -213,7 +213,7 @@ Expected output:
  ✔ frontend Built                          0.0s
  ✔ nginx Built                             0.0s
  ✔ Network cyber-bay-sample-app_default    0.1s
- ✔ Container cg-postgres Started           0.3s
+ ✔ Container cyber-bay-db-cg Started       0.3s
  ✔ Container cg-backend Started            0.4s
  ✔ Container cg-frontend Started           0.4s
  ✔ Container cg-nginx Started              0.4s
@@ -228,11 +228,11 @@ docker ps
 
 Expected output:
 ```
-CONTAINER ID   IMAGE                                STATUS         PORTS                    NAMES
-476abfd23815   cyber-bay-nginx-cg:latest            Up 5 minutes   0.0.0.0:80->80/tcp       cg-nginx
-4a12bab4e30b   cyber-bay-frontend-cg:latest         Up 5 minutes                            cg-frontend
-5151ef168869   cyber-bay-backend-cg:latest          Up 5 minutes   0.0.0.0:5000->5000/tcp   cg-backend
-949fdcf98c9d   cgr.dev/chainguard/postgres:latest   Up 5 minutes   0.0.0.0:5432->5432/tcp   cg-postgres
+CONTAINER ID   IMAGE                           STATUS         PORTS                    NAMES
+476abfd23815   cyber-bay-nginx-cg:latest       Up 5 minutes   0.0.0.0:80->80/tcp       cg-nginx
+4a12bab4e30b   cyber-bay-frontend-cg:latest    Up 5 minutes                            cg-frontend
+5151ef168869   cyber-bay-backend-cg:latest     Up 5 minutes   0.0.0.0:5000->5000/tcp   cg-backend
+949fdcf98c9d   cyber-bay-db-cg:latest          Up 5 minutes   0.0.0.0:5432->5432/tcp   cyber-bay-db-cg
 ```
 
 Open [http://localhost:80](http://localhost:80) in your browser.
