@@ -25,17 +25,15 @@ services:
 
   db:
     container_name: cyber-bay-db-cg
-    image: cgr.dev/chainguard/postgres:latest
-    # image: postgres:15
+    image: cyber-bay-db-cg:latest
+    build:
+      context: ./db
+      dockerfile: Dockerfile-chainguard
     restart: always
     environment:
       POSTGRES_DB: chaiku
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-    volumes:
-      # - ./db/init.sql:/var/lib/postgres/docker-entrypoint-initdb.d/init.sql
-        - ./db/init.sql:/var/lib/postgres/initdb/init.sql
-
     ports:
       - "5432:5432"
 
