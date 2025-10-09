@@ -20,15 +20,16 @@ services:
       POSTGRES_PASSWORD: password
 
   db:
-    image: postgres:latest
-    container_name: cyber-bay-db-legacy
+    image: cyber-bay-db-legacy:latest
+    container_name: legacy-db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     restart: always
     environment:
       POSTGRES_DB: chaiku
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-    volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
 
