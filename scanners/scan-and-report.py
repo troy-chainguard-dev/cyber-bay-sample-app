@@ -273,17 +273,24 @@ class VulnerabilityScanner:
         """Save CSV reports for both categories."""
         print("\n💾 Saving CSV reports...")
         
-        if self.chainguard_results:
-            filepath = self.write_csv(self.chainguard_results, 'grype-chainguard-images.csv')
-            print(f"   ✅ Chainguard: {filepath} ({len(self.chainguard_results)} vulnerabilities)")
-        else:
-            print("   ✅ Chainguard: No vulnerabilities found! 🎉")
+        # Check which image types were actually scanned
+        has_chainguard_images = any(self.is_chainguard_image(img) for img in self.scanned_images)
+        has_legacy_images = any(not self.is_chainguard_image(img) for img in self.scanned_images)
         
-        if self.legacy_results:
-            filepath = self.write_csv(self.legacy_results, 'grype-legacy-images.csv')
-            print(f"   ✅ Legacy: {filepath} ({len(self.legacy_results)} vulnerabilities)")
-        else:
-            print("   ✅ Legacy: No vulnerabilities found!")
+        # Only report on categories that were actually scanned
+        if has_chainguard_images:
+            if self.chainguard_results:
+                filepath = self.write_csv(self.chainguard_results, 'grype-chainguard-images.csv')
+                print(f"   ✅ Chainguard: {filepath} ({len(self.chainguard_results)} vulnerabilities)")
+            else:
+                print("   ✅ Chainguard: No vulnerabilities found! 🎉")
+        
+        if has_legacy_images:
+            if self.legacy_results:
+                filepath = self.write_csv(self.legacy_results, 'grype-legacy-images.csv')
+                print(f"   ✅ Legacy: {filepath} ({len(self.legacy_results)} vulnerabilities)")
+            else:
+                print("   ✅ Legacy: No vulnerabilities found!")
     
     def generate_excel_report(self, csv_file: Path):
         """Generate Excel report from CSV file."""
