@@ -36,25 +36,30 @@ git clone https://github.com/troy-chainguard-dev/cyber-bay-sample-app.git && cd 
 
 ### Python Virtual Environment Setup
 
-Create and activate a Python virtual environment for the scanning tools:
+Create and activate a Python virtual environment for the scanning tools.  Example where the Python binary is `python3`:
 
 ```
 python3 -m venv venv
 ```
-For Mac/Linux, activate the virtual environment:
+For `bash/zsh` based terminals:
 ```
 source venv/bin/activate
 ```
 
-For Windows:
+For Windows terminals:
 ```
-venv\Scripts\activate
+.\venv\Scripts\activate
 ```
 Install Python dependencies:
+
+For `bash/zsh` based terminals:
 ```
 pip install -r scanners/requirements.txt
 ```
-
+For Windows terminals:
+```
+pip install -r .\scanners\requirements.txt
+```
 **Note:** The environment will need to be activated to run the scanners in later steps so we can work within the virtual Python environment for the remainder of the steps 
 
 ---
@@ -266,8 +271,6 @@ Here's a snapshot comparison from a recent scan on 10/6/25 (your results may var
 **Key Takeaways:**
 - 🔻 **83% reduction in total image size** (2.7 GB → 455 MB)
 - 🔻 **99% reduction in CVEs** (650+ → 0-6)
-- ⚡ **Faster deployments** - Less data to pull and scan
-- 🛡️ **Smaller attack surface** - Fewer components means fewer vulnerabilities
 
 ---
 
@@ -296,9 +299,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "wsgi.py"]
 ```
+**Resulting Image:**
+```
+❯ docker images |grep cyber-bay-backend-legacy
+cyber-bay-backend-legacy latest 4deda6071707 2 days ago 1.64GB
+```
 
 **Issues with this approach:**
-- ❌ Large image size (~1GB+) with full OS packages
+- ❌ Large image size (1.6GB+) with full OS packages
 - ❌ Build tools remain in final image
 - ❌ High CVE count from unnecessary dependencies
 - ❌ Runs as root by default
@@ -326,6 +334,11 @@ COPY . .
 COPY --from=builder /app/venv /venv
 
 ENTRYPOINT [ "python", "wsgi.py" ]
+```
+**Resulting Image**
+```
+❯ docker images |grep cyber-bay-backend-cg
+cyber-bay-backend-cg latest 526d24399c50   23 hours ago    126MB
 ```
 
 **Benefits of this approach:**
