@@ -21,7 +21,7 @@ services:
 
   db:
     image: postgres:latest
-    container_name: legacy-postgres
+    container_name: cyber-bay-db-legacy
     restart: always
     environment:
       POSTGRES_DB: chaiku
