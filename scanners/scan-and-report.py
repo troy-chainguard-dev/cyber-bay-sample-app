@@ -85,10 +85,14 @@ class VulnerabilityScanner:
     def _command_exists(self, command: str) -> bool:
         """Check if a command exists in PATH."""
         try:
+            # Use 'where' on Windows, 'which' on Unix
+            check_cmd = 'where' if sys.platform.startswith('win') else 'which'
             subprocess.run(
-                ['which', command],
+                [check_cmd, command],
                 capture_output=True,
-                check=True
+                check=True,
+                encoding='utf-8',
+                errors='replace'
             )
             return True
         except subprocess.CalledProcessError:
@@ -102,6 +106,8 @@ class VulnerabilityScanner:
                 ['docker', 'compose', 'ps', '-q'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 check=True
             )
             container_ids = [cid.strip() for cid in result.stdout.split('\n') if cid.strip()]
@@ -133,6 +139,8 @@ class VulnerabilityScanner:
                 ['docker', 'inspect', '--format={{.Config.Image}}', container_id],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 check=True
             )
             return result.stdout.strip()
@@ -152,6 +160,8 @@ class VulnerabilityScanner:
                 ['grype', image_name, '-o', 'json'],
                 capture_output=True,
                 text=True,
+                encoding='utf-8',
+                errors='replace',
                 check=True
             )
             
