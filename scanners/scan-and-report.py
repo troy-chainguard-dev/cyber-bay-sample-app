@@ -124,7 +124,9 @@ class VulnerabilityScanner:
                 image_name = self.get_image_name(container_id)
                 if image_name:
                     containers_with_images.append((container_id, image_name))
-                    print(f"      • {image_name}")
+                    platform = self.get_image_platform(image_name)
+                    platform_info = f" [{platform}]" if platform else ""
+                    print(f"      • {image_name}{platform_info}")
             
             return containers_with_images
             
@@ -147,13 +149,30 @@ class VulnerabilityScanner:
         except subprocess.CalledProcessError:
             return None
     
+    def get_image_platform(self, image_name: str) -> Optional[str]:
+        """Get the platform/architecture of an image."""
+        try:
+            result = subprocess.run(
+                ['docker', 'inspect', '--format={{.Os}}/{{.Architecture}}', image_name],
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                errors='replace',
+                check=True
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError:
+            return None
+    
     def is_chainguard_image(self, image_name: str) -> bool:
         """Check if image matches Chainguard patterns."""
         return any(pattern in image_name for pattern in self.CHAINGUARD_PATTERNS)
     
     def scan_image(self, image_name: str) -> List[Dict]:
         """Scan an image with Grype and return vulnerabilities."""
-        print(f"   Scanning: {image_name}")
+        platform = self.get_image_platform(image_name)
+        platform_info = f" [{platform}]" if platform else ""
+        print(f"   Scanning: {image_name}{platform_info}")
         
         try:
             result = subprocess.run(
@@ -172,6 +191,7 @@ class VulnerabilityScanner:
             for match in data.get('matches', []):
                 vuln = {
                     'Image': image_name,
+                    'Platform': platform or 'unknown',
                     'Package': match['artifact']['name'],
                     'Version': match['artifact']['version'],
                     'Vulnerability': match['vulnerability']['id'],
@@ -236,7 +256,7 @@ class VulnerabilityScanner:
         filepath = self.output_dir / filename
         
         # CSV headers
-        headers = ['Image', 'Package', 'Version', 'Vulnerability', 'Severity', 'Type', 'FixedInVersion']
+        headers = ['Image', 'Platform', 'Package', 'Version', 'Vulnerability', 'Severity', 'Type', 'FixedInVersion']
         
         with open(filepath, 'w') as f:
             # Write header
@@ -401,7 +421,9 @@ class VulnerabilityScanner:
         
         # Sort by count (descending), then by name
         for image, count in sorted(all_images_with_counts.items(), key=lambda x: (-x[1], x[0])):
-            ws[f'A{row}'] = image
+            platform = self.get_image_platform(image)
+            platform_info = f" [{platform}]" if platform else ""
+            ws[f'A{row}'] = f"{image}{platform_info}"
             ws[f'B{row}'] = count
             row += 1
         
@@ -456,7 +478,7 @@ class VulnerabilityScanner:
         ws = wb.create_sheet(sheet_name)
         
         # Headers
-        headers = ['Image', 'Package', 'Version', 'Vulnerability', 'Severity', 'Type', 'Fixed In']
+        headers = ['Image', 'Platform', 'Package', 'Version', 'Vulnerability', 'Severity', 'Type', 'Fixed In']
         for col_num, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col_num, value=header)
             cell.font = Font(bold=True, color='FFFFFF')
@@ -468,11 +490,11 @@ class VulnerabilityScanner:
             # Add "No vulnerabilities" message
             ws['A2'] = f"✅ No {name} vulnerabilities found!"
             ws['A2'].font = Font(size=14, bold=True, color='228B22')
-            ws.merge_cells('A2:G2')
+            ws.merge_cells('A2:H2')
             ws['A2'].alignment = Alignment(horizontal='center', vertical='center')
             
             # Set column widths
-            widths = [35, 30, 15, 20, 12, 10, 15]
+            widths = [35, 15, 30, 15, 20, 12, 10, 15]
             for col_num, width in enumerate(widths, 1):
                 ws.column_dimensions[get_column_letter(col_num)].width = width
             return
@@ -484,12 +506,13 @@ class VulnerabilityScanner:
         # Data rows
         for row_num, row_data in enumerate(sorted_data, 2):
             ws.cell(row=row_num, column=1, value=row_data['Image'])
-            ws.cell(row=row_num, column=2, value=row_data['Package'])
-            ws.cell(row=row_num, column=3, value=row_data['Version'])
+            ws.cell(row=row_num, column=2, value=row_data.get('Platform', 'unknown'))
+            ws.cell(row=row_num, column=3, value=row_data['Package'])
+            ws.cell(row=row_num, column=4, value=row_data['Version'])
             
             # Hyperlinked CVE
             cve = row_data['Vulnerability']
-            cve_cell = ws.cell(row=row_num, column=4, value=cve)
+            cve_cell = ws.cell(row=row_num, column=5, value=cve)
             if cve.startswith('CVE-'):
                 cve_cell.hyperlink = f"https://nvd.nist.gov/vuln/detail/{cve}"
                 cve_cell.font = Font(color='0563C1', underline='single')
@@ -498,20 +521,20 @@ class VulnerabilityScanner:
                 cve_cell.font = Font(color='0563C1', underline='single')
             
             severity = row_data['Severity']
-            severity_cell = ws.cell(row=row_num, column=5, value=severity)
+            severity_cell = ws.cell(row=row_num, column=6, value=severity)
             color = self.SEVERITY_COLORS.get(severity, 'FFFFFF')
             severity_cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
             if severity in ['Critical', 'High']:
                 severity_cell.font = Font(bold=True, color='FFFFFF')
             
-            ws.cell(row=row_num, column=6, value=row_data['Type'])
-            ws.cell(row=row_num, column=7, value=row_data.get('FixedInVersion', 'N/A'))
+            ws.cell(row=row_num, column=7, value=row_data['Type'])
+            ws.cell(row=row_num, column=8, value=row_data.get('FixedInVersion', 'N/A'))
         
         ws.auto_filter.ref = ws.dimensions
         ws.freeze_panes = ws['A2']
         
         # Column widths
-        widths = [35, 30, 15, 20, 12, 10, 15]
+        widths = [35, 15, 30, 15, 20, 12, 10, 15]
         for col_num, width in enumerate(widths, 1):
             ws.column_dimensions[get_column_letter(col_num)].width = width
     
@@ -529,8 +552,12 @@ class VulnerabilityScanner:
             
             ws = wb.create_sheet(sheet_name)
             
+            # Get platform for this image
+            platform = self.get_image_platform(image)
+            platform_info = f" [{platform}]" if platform else ""
+            
             # Title
-            ws['A1'] = f"Image: {image}"
+            ws['A1'] = f"Image: {image}{platform_info}"
             ws['A1'].font = Font(size=14, bold=True)
             ws.merge_cells('A1:F1')
             
@@ -789,6 +816,10 @@ class VulnerabilityScanner:
         self.generate_reports()
         
         print("\n✅ Scan complete!")
+        print("=" * 60)
+        print("\n💡 Note: Multi-architecture images (e.g., python:latest) may have")
+        print("   different vulnerabilities on different platforms (arm64 vs amd64).")
+        print("   The Platform column in reports shows which architecture was scanned.")
         print("=" * 60)
         return 0
 
