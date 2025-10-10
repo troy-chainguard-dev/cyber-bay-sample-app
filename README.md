@@ -373,7 +373,7 @@ List installed debian packages in python:latest
 docker run --rm python:latest dpkg -l | wc -l
 ```
 ```
-477 packages  # Includes apt, gcc, perl, systemd libs, etc.
+477 packages
 ```
 
 **The problem:** Most of these 477 packages are inherited from Debian and have nothing to do with Python. They include:
@@ -418,10 +418,10 @@ cyber-bay-backend-cg latest 526d24399c50   23 hours ago    126MB
 
 **What makes Chainguard different?**
 
-Chainguard images are built on **Wolfi**, a Linux _undistro_ designed specifically for containers - NOT a traditional Linux distribution. Let's prove it:
+Chainguard images are built on **[Wolfi](https://github.com/wolfi-dev/)**, a Linux _undistro_ designed specifically for containers - NOT a traditional Linux distribution like Debian.
 
+Prove it's Wolfi (using -dev variant since runtime has no shell):
 ```bash
-# Check the Chainguard base OS (using the -dev variant which has shell tools)
 docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest-dev -c "cat /etc/os-release"
 ```
 
@@ -429,57 +429,47 @@ docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest-dev -c "ca
 ID=wolfi
 NAME="Wolfi"
 PRETTY_NAME="Wolfi"
-VERSION_ID="20230201"
 HOME_URL="https://wolfi.dev"
 ```
 
-**Key difference:** Wolfi uses `apk` (Alpine-style package manager), not `dpkg` (Debian). Let's compare package counts:
+**The runtime image is truly distroless** - it doesn't even have a shell.
 
+Try to run a shell in the production runtime image:
 ```bash
-# Debian-based Python image uses dpkg
+docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest -c "echo test"
+```
+```
+exec: "/bin/sh": stat /bin/sh: no such file or directory
+```
+
+**Package comparison: Debian vs Wolfi runtime**
+
+Debian-based Python runtime:
+```bash
 docker run --rm python:latest dpkg -l | grep "^ii" | wc -l
 ```
 ```
 467 packages
 ```
 
-```bash  
-# Wolfi-based Chainguard uses apk (checking the -dev variant with build tools)
-docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest-dev -c "apk list --installed | wc -l"
-```
-```
-75 packages  # 84% fewer packages, even WITH build tools included!
-```
-
-Let's scan the Chainguard Python runtime image (not the -dev variant):
-
+Chainguard Python runtime (Wolfi-based):
 ```bash
 grype cgr.dev/chainguard/python:latest
+```
+```
  ✔ Cataloged contents
-   ├── ✔ Packages                        [22 packages]   # Only what Python needs!
+   ├── ✔ Packages                        [22 packages]
    ├── ✔ Executables                     [27 executables]
 ```
 
-**The runtime image is truly distroless** - it doesn't even have a shell or package manager:
-
-```bash
-# Try to run a shell in the runtime image
-docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest -c "echo test"
-```
-```
-docker: Error response from daemon: failed to create task for container: 
-failed to create shim task: OCI runtime create failed: runc create failed: 
-unable to start container process: exec: "/bin/sh": stat /bin/sh: no such file or directory
-```
-
-**This is intentional!** The `-dev` variant has build tools (75 packages), but the runtime image is stripped down to **only 22 packages** - just Python and its essential dependencies.
+The Chainguard runtime has only **22** packages - just Python and essential dependencies. The Debian runtime has **467** packages including full OS tools like shells, package managers, and build tools.
 
 **The Chainguard approach:**
-- 🎯 **Wolfi-based**: Purpose-built OS for containers (not Debian/Ubuntu/Alpine)
-- 🗑️ **Distroless runtime**: No package manager, no shell, no unnecessary tools
-- 📦 **Minimal packages**: 22 runtime vs 467 Debian (95% reduction)
+- 🎯 **Wolfi-based**: Purpose-built minimal OS, not Debian/Ubuntu
+- 🗑️ **Distroless runtime**: No shell, no package manager, no unnecessary tools
+- 📦 **95% fewer packages**: 22 vs 467 (only what Python needs to run)
 - 🔒 **Non-root by default**: Runs as user `65532` (nonroot)
-- 🏗️ **Multi-stage build**: Build tools in `-dev` image (75 packages), minimal runtime in production (22 packages)
+- 🏗️ **Multi-stage build**: Use `-dev` image to build, minimal runtime for production
 
 **Benefits of this approach:**
 - ✅ **92% smaller** - 126MB vs 1.64GB (only runtime dependencies)
