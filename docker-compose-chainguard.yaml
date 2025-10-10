@@ -30,6 +30,14 @@ services:
       context: ./db
       dockerfile: Dockerfile-chainguard
     restart: always
+    command: 
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
     environment:
       POSTGRES_DB: chaiku
       POSTGRES_USER: user
