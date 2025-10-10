@@ -86,7 +86,7 @@ pip install -r .\scanners\requirements.txt
 </tr>
 </table>
 
-First we will use docker compose to build the app using the legacy images. The following `docker compose` command will recognize the `docker-compose.yaml` file in the root project directory and build our project using public upstream images from Docker Hub for each specific component.  **Note that the --build flag will force Docker to rebuild each container which involves pulling new images.  This may take a long time on a poor network connection!**
+First we will use docker compose to build the app using the legacy images. The following `docker compose` command will recognize the `docker-compose.yaml` file in the root project directory and build custom images for each component based on public upstream base images from Docker Hub (node:latest, python:latest, nginx:latest, postgres:latest).  **Note that the --build flag forces Docker to rebuild the images, and if the base images aren't cached locally, Docker will pull them from Docker Hub, which may take a long time on a poor network connection!**
 
 ```bash
 docker compose up -d --build
@@ -121,19 +121,34 @@ CONTAINER ID   IMAGE                              STATUS         PORTS          
 22f51e9cdff9   cyber-bay-db-legacy:latest         Up 3 minutes   0.0.0.0:5432->5432/tcp   legacy-db
 ```
 
+Let's start a log view of our containers before we test our app:
+```
+docker compose logs -f
+```
+
 Open [http://localhost:80](http://localhost:80) in your browser to view the website:
 
 <div align="center">
   <img src="img/website.png" alt="Course Registration Website" style="border-radius: 15px;"/>
 </div>
 
-Check that the backend API works:
+Refresh the page and click some 'Register' buttons and look at our logs to see the output.  We should see all the various components receiving and passing traffic:
 
-```bash
-curl http://localhost:5000
+```json
+legacy-db        | 2025-10-10 15:38:12.260 UTC [1] LOG:  database system is ready to accept connections
+legacy-frontend  | [2025-10-10T15:38:17.514Z] GET / - 172.20.0.5
+legacy-nginx     | 172.20.0.1 - - [10/Oct/2025:15:38:17 +0000] "GET / HTTP/1.1" 200 279 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+legacy-db        | 2025-10-10 15:38:17.558 UTC [69] LOG:  connection received: host=172.20.0.3 port=53718
+legacy-db        | 2025-10-10 15:38:17.568 UTC [69] LOG:  connection authenticated: identity="user" method=scram-sha-256 (/var/lib/postgresql/data/pg_hba.conf:128)
+legacy-db        | 2025-10-10 15:38:17.568 UTC [69] LOG:  connection authorized: user=user database=chaiku
+legacy-db        | 2025-10-10 15:38:17.574 UTC [69] LOG:  statement: BEGIN
+legacy-db        | 2025-10-10 15:38:17.575 UTC [69] LOG:  statement: SELECT id, name, credits FROM courses
+legacy-db        | 2025-10-10 15:38:17.576 UTC [69] LOG:  disconnection: session time: 0:00:00.018 user=user database=chaiku host=172.20.0.3 port=53718
+legacy-backend   | 172.20.0.5 - - [10/Oct/2025 15:38:17] "GET /courses HTTP/1.0" 200 -
+legacy-nginx     | 172.20.0.1 - - [10/Oct/2025:15:38:17 +0000] "GET /api/courses HTTP/1.1" 200 298 "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+legacy-db        | 2025-10-10 15:38:18.867 UTC [70] LOG:  connection received: host=172.20.0.3 port=53726
 ```
-
-You should see the response: `Hooray! The API works.`
+This confirms that our microservice app is up and operational!
 
 ### Scan Legacy Images for CVEs
 
@@ -235,13 +250,31 @@ CONTAINER ID   IMAGE                           STATUS         PORTS             
 949fdcf98c9d   cyber-bay-db-cg:latest          Up 5 minutes   0.0.0.0:5432->5432/tcp   cyber-bay-db-cg
 ```
 
-Open [http://localhost:80](http://localhost:80) in your browser.
-
-Check the API:
-
-```bash
-curl http://localhost:5000/
+Let's start a log view of our containers before we test our app:
 ```
+docker compose logs -f
+```
+Open [http://localhost:80](http://localhost:80) in your browser to view the website:
+
+<div align="center">
+  <img src="img/website.png" alt="Course Registration Website" style="border-radius: 15px;"/>
+</div>
+
+Refresh the page and click some 'Register' buttons and look at our logs to see the output. We should see all the various components receiving and passing traffic:
+
+```json
+cyber-bay-db-cg  | 2025-10-10 15:29:49.178 UTC [1] LOG:  database system is ready to accept connections
+cg-frontend      | [2025-10-10T15:29:53.667Z] GET / - 172.20.0.5
+cg-nginx         | 172.20.0.1 - - [10/Oct/2025:15:29:53 +0000] "GET / HTTP/1.1" 200 279 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+cg-backend       | 172.20.0.5 - - [10/Oct/2025 15:29:53] "GET /courses HTTP/1.0" 200 -
+cg-nginx         | 172.20.0.1 - - [10/Oct/2025:15:29:53 +0000] "GET /api/courses HTTP/1.1" 200 298 "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+cg-backend       | 172.20.0.5 - - [10/Oct/2025 15:29:55] "POST /register HTTP/1.0" 201 -
+cg-nginx         | 172.20.0.1 - - [10/Oct/2025:15:29:55 +0000] "POST /api/register HTTP/1.1" 201 43 "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+cg-backend       | 172.20.0.5 - - [10/Oct/2025 15:29:58] "POST /register HTTP/1.0" 201 -
+cg-nginx         | 172.20.0.1 - - [10/Oct/2025:15:29:58 +0000] "POST /api/register HTTP/1.1" 201 43 "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
+```
+
+This confirms that our Chainguard-based microservice app is up and operational!
 
 ### Scan Chainguard Images for CVEs
 
@@ -258,7 +291,7 @@ This will generate the same reports as above (CSV and Excel), plus an additional
 
 ### Image Comparison: Legacy vs Chainguard
 
-Here's a snapshot comparison from a recent scan on 10/6/25 (your results may vary based on scan date):
+Here's a snapshot comparison from a recent scan on 10/6/25 (your results may vary based on scan date and host system architecture):
 
 | Component | Legacy Image | Size | CVEs | Chainguard Image | Size | CVEs |
 |-----------|-------------|------|------|------------------|------|------|
@@ -286,7 +319,7 @@ docker compose down -v
 
 ## Migrating From Upstream to Chainguard
 
-One of the key benefits of Chainguard images is how straightforward it is to migrate from upstream images. Let's walk through the Python backend as an example to see what's involved.
+Let's take a closer look at Chainguard images work differently from upstream images using our Python container as an example.
 
 ### Legacy Dockerfile (Upstream Python)
 
@@ -305,11 +338,52 @@ CMD ["python", "wsgi.py"]
 cyber-bay-backend-legacy latest 4deda6071707 2 days ago 1.64GB
 ```
 
-**Issues with this approach:**
-- ❌ Large image size (1.6GB+) with full OS packages
-- ❌ Build tools remain in final image
-- ❌ High CVE count from unnecessary dependencies
-- ❌ Runs as root by default
+**Why is this image so big?**  
+
+The `python:latest` image is built on top of **Debian Linux** (specifically Debian Trixie), which includes a full operating system with hundreds of packages that aren't needed for running Python applications. Let's examine what's inside:
+
+Check the base OS:
+```bash
+docker run --rm python:latest cat /etc/os-release
+```
+
+```
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+NAME="Debian GNU/Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+...
+```
+
+A Grype scan reveals the scale of unnecessary packages:
+
+```
+grype python:latest
+   ...
+   ├── ✔ Packages                        [477 packages]
+   ├── ✔ Executables                     [1,403 executables]
+   ├── ✔ File metadata                   [21,671 locations]
+   └── ✔ File digests                    [21,671 files]
+```
+
+**Where do all these packages come from?** The base Debian OS brings most of them:
+
+List installed debian packages in python:latest
+```bash
+docker run --rm python:latest dpkg -l | wc -l
+```
+```
+477 packages  # Includes apt, gcc, perl, systemd libs, etc.
+```
+
+**The problem:** Most of these 477 packages are inherited from Debian and have nothing to do with Python. They include:
+- 📦 Package managers (apt, dpkg)
+- 🛠️ Build tools (gcc, make, perl)  
+- 📚 System libraries (systemd, pam, glibc utilities)
+- 🐚 Shells and utilities (bash, grep, sed, coreutils)
+- 🔧 Services and daemons you'll never use
+
+**Each unnecessary package = more CVEs, more attack surface, more storage.**
 
 ### Chainguard Dockerfile (Hardened Python)
 
@@ -335,80 +409,106 @@ COPY --from=builder /app/venv /venv
 
 ENTRYPOINT [ "python", "wsgi.py" ]
 ```
-**Resulting Image**
+
+**Resulting Image:**
 ```
 ❯ docker images |grep cyber-bay-backend-cg
 cyber-bay-backend-cg latest 526d24399c50   23 hours ago    126MB
 ```
 
+**What makes Chainguard different?**
+
+Chainguard images are built on **Wolfi**, a Linux _undistro_ designed specifically for containers - NOT a traditional Linux distribution. Let's prove it:
+
+```bash
+# Check the Chainguard base OS (using the -dev variant which has shell tools)
+docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest-dev -c "cat /etc/os-release"
+```
+
+```
+ID=wolfi
+NAME="Wolfi"
+PRETTY_NAME="Wolfi"
+VERSION_ID="20230201"
+HOME_URL="https://wolfi.dev"
+```
+
+**Key difference:** Wolfi uses `apk` (Alpine-style package manager), not `dpkg` (Debian). Let's compare package counts:
+
+```bash
+# Debian-based Python image uses dpkg
+docker run --rm python:latest dpkg -l | grep "^ii" | wc -l
+```
+```
+467 packages
+```
+
+```bash  
+# Wolfi-based Chainguard uses apk (checking the -dev variant with build tools)
+docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest-dev -c "apk list --installed | wc -l"
+```
+```
+75 packages  # 84% fewer packages, even WITH build tools included!
+```
+
+Let's scan the Chainguard Python runtime image (not the -dev variant):
+
+```bash
+grype cgr.dev/chainguard/python:latest
+ ✔ Cataloged contents
+   ├── ✔ Packages                        [22 packages]   # Only what Python needs!
+   ├── ✔ Executables                     [27 executables]
+```
+
+**The runtime image is truly distroless** - it doesn't even have a shell or package manager:
+
+```bash
+# Try to run a shell in the runtime image
+docker run --rm --entrypoint /bin/sh cgr.dev/chainguard/python:latest -c "echo test"
+```
+```
+docker: Error response from daemon: failed to create task for container: 
+failed to create shim task: OCI runtime create failed: runc create failed: 
+unable to start container process: exec: "/bin/sh": stat /bin/sh: no such file or directory
+```
+
+**This is intentional!** The `-dev` variant has build tools (75 packages), but the runtime image is stripped down to **only 22 packages** - just Python and its essential dependencies.
+
+**The Chainguard approach:**
+- 🎯 **Wolfi-based**: Purpose-built OS for containers (not Debian/Ubuntu/Alpine)
+- 🗑️ **Distroless runtime**: No package manager, no shell, no unnecessary tools
+- 📦 **Minimal packages**: 22 runtime vs 467 Debian (95% reduction)
+- 🔒 **Non-root by default**: Runs as user `65532` (nonroot)
+- 🏗️ **Multi-stage build**: Build tools in `-dev` image (75 packages), minimal runtime in production (22 packages)
+
 **Benefits of this approach:**
-- ✅ Minimal image size (~50MB) with only runtime dependencies
-- ✅ Multi-stage build separates build tools from runtime
-- ✅ Zero to near-zero CVEs
-- ✅ Runs as non-root user by default
-- ✅ Uses virtual environment for dependency isolation
-
-### Key Migration Steps
-
-1. **Use multi-stage builds** - Separate build environment (`-dev` image) from runtime
-2. **Implement virtual environments** - Chainguard's minimal images require proper dependency isolation
-3. **Copy only what's needed** - Use `COPY --from=builder` to get only the venv
-4. **Update base image references** - Change `python:latest` to `cgr.dev/chainguard/python:latest`
-
-This pattern applies to most language migrations - build in one stage with tools, run in a minimal stage with only runtime dependencies.
+- ✅ **92% smaller** - 126MB vs 1.64GB (only runtime dependencies)
+- ✅ **Multi-stage build** - Separates build tools from runtime
+- ✅ **99% fewer CVEs** - Only essential packages = minimal attack surface
+- ✅ **Runs as non-root** - Secure by default
+- ✅ **No unnecessary attack vectors** - No shells, package managers, or OS utilities
 
 ---
 
-## Wrap Up: How Chainguard Achieves Zero to Near-Zero CVEs
+## Wrap Up: The Chainguard Difference
 
-### The Chainguard Approach
+Chainguard achieves zero to near-zero CVEs through:
 
-Chainguard achieves dramatically lower CVE counts through several key principles:
+- 🎯 **Wolfi-based & Distroless** - Built on a minimal OS, not bloated Debian/Ubuntu distributions
+- 📦 **Minimal packages** - Only essential runtime dependencies (95% fewer packages than upstream)
+- 🔒 **Non-root by default** - All images run as unprivileged users
+- 🔄 **Daily updates** - Automated rebuilds with latest security patches
+- 📋 **Built-in SBOMs** - Cryptographically signed software bill of materials for compliance
 
-**1. Minimalism by Design**
-- Only essential runtime components included
-- No package managers, shells, or build tools in final images
-- Smaller image = smaller attack surface
+### The Bottom Line
 
-**2. Distroless Architecture**
-- No traditional Linux distribution (no apt, yum, etc.)
-- Only application and its runtime dependencies
-- Eliminates vulnerabilities from unused system packages
+| Metric | Upstream Images | Chainguard Images |
+|--------|----------------|-------------------|
+| **Total CVEs** | 650+ | 0-6 |
+| **Total Size** | ~2.7 GB | ~455 MB |
+| **Packages (Python)** | 467 | 22 |
+| **Attack Surface** | Full OS with shells, package managers, build tools | Distroless - application runtime only |
 
-**3. Proactive Security**
-- Daily automated rebuilds with latest patches
-- Continuous vulnerability scanning and remediation
-- CVEs fixed before they're widely disclosed
-
-**4. Software Bill of Materials (SBOM)**
-- Every image includes a cryptographically signed SBOM
-- Complete transparency of what's in your containers
-- Easy compliance and audit trails
-
-**5. Non-Root by Default**
-- All images run as non-privileged users
-- Reduces blast radius of potential exploits
-- Follows principle of least privilege
-
-### Key Benefits Summary
-
-| Benefit | Impact |
-|---------|--------|
-| 🛡️ **Security** | 99% reduction in CVEs compared to upstream images |
-| 📦 **Size** | 80-90% smaller images mean faster deployments |
-| ⚡ **Performance** | Less to scan, pull, and start = better CI/CD times |
-| 🔒 **Compliance** | Built-in SBOMs simplify auditing and governance |
-| 🔄 **Maintenance** | Daily updates ensure you're always patched |
-| 💰 **Cost** | Reduced storage, bandwidth, and security incident costs |
-
-### Why It Matters
-
-In production environments, every CVE represents:
-- Potential security incidents requiring investigation
-- Compliance violations and audit findings
-- Emergency patching and deployment cycles
-- Risk to your customers and reputation
-
-**Chainguard Images eliminate these concerns** by providing secure-by-default containers that are continuously maintained, minimally scoped, and transparently documented.
+In production, every CVE means potential security incidents, compliance violations, and emergency patching. **Chainguard Images eliminate these concerns** with secure-by-default containers that are minimal, continuously maintained, and transparently documented.
 
 ---
