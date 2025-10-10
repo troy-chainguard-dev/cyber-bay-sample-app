@@ -465,32 +465,17 @@ grype cgr.dev/chainguard/python:latest
 The Chainguard runtime has only **22** packages - just Python and essential dependencies. The Debian runtime has **467** packages including full OS tools like shells, package managers, and build tools.
 
 **The Chainguard approach:**
-- 🎯 **Wolfi-based**: Purpose-built minimal OS, not Debian/Ubuntu
+- 🎯 **Wolfi-based**: Purpose-built minimal OS designed for containers, not bloated Debian/Ubuntu
 - 🗑️ **Distroless runtime**: No shell, no package manager, no unnecessary tools
 - 📦 **95% fewer packages**: 22 vs 467 (only what Python needs to run)
 - 🔒 **Non-root by default**: Runs as user `65532` (nonroot)
 - 🏗️ **Multi-stage build**: Use `-dev` image to build, minimal runtime for production
-
-**Benefits of this approach:**
-- ✅ **92% smaller** - 126MB vs 1.64GB (only runtime dependencies)
-- ✅ **Multi-stage build** - Separates build tools from runtime
-- ✅ **99% fewer CVEs** - Only essential packages = minimal attack surface
-- ✅ **Runs as non-root** - Secure by default
-- ✅ **No unnecessary attack vectors** - No shells, package managers, or OS utilities
+- 🔄 **Daily updates**: Automated rebuilds with latest security patches
+- 📋 **Built-in SBOMs**: Cryptographically signed software bill of materials for compliance
 
 ---
 
-## Wrap Up: The Chainguard Difference
-
-Chainguard achieves zero to near-zero CVEs through:
-
-- 🎯 **Wolfi-based & Distroless** - Built on a minimal OS, not bloated Debian/Ubuntu distributions
-- 📦 **Minimal packages** - Only essential runtime dependencies (95% fewer packages than upstream)
-- 🔒 **Non-root by default** - All images run as unprivileged users
-- 🔄 **Daily updates** - Automated rebuilds with latest security patches
-- 📋 **Built-in SBOMs** - Cryptographically signed software bill of materials for compliance
-
-### The Bottom Line
+## Summary: By The Numbers
 
 | Metric | Upstream Images | Chainguard Images |
 |--------|----------------|-------------------|
@@ -499,6 +484,6 @@ Chainguard achieves zero to near-zero CVEs through:
 | **Packages (Python)** | 467 | 22 |
 | **Attack Surface** | Full OS with shells, package managers, build tools | Distroless - application runtime only |
 
-In production, every CVE means potential security incidents, compliance violations, and emergency patching. **Chainguard Images eliminate these concerns** with secure-by-default containers that are minimal, continuously maintained, and transparently documented.
+**The bottom line:** In production, every CVE means security incidents, compliance violations, and emergency patching. Chainguard Images eliminate 99% of these concerns by shipping only what your application needs to run—nothing more.
 
 ---
