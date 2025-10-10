@@ -319,7 +319,7 @@ docker compose down -v
 
 ## Migrating From Upstream to Chainguard
 
-Let's take a closer look at Chainguard images work differently from upstream images using our Python container as an example.
+Let's take a closer look at how Chainguard images differ from upstream images by comparing the Dockerfiles for Python and some image details.
 
 ### Legacy Dockerfile (Upstream Python)
 
@@ -373,7 +373,7 @@ List installed debian packages in python:latest
 docker run --rm python:latest dpkg -l | wc -l
 ```
 ```
-477 packages
+472 packages
 ```
 
 **The problem:** Most of these 477 packages are inherited from Debian and have nothing to do with Python. They include:
