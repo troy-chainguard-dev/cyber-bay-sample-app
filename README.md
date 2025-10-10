@@ -134,7 +134,7 @@ Open [http://localhost:80](http://localhost:80) in your browser to view the webs
 
 Refresh the page and click some 'Register' buttons and look at our logs to see the output.  We should see all the various components receiving and passing traffic:
 
-```json
+```
 legacy-db        | 2025-10-10 15:38:12.260 UTC [1] LOG:  database system is ready to accept connections
 legacy-frontend  | [2025-10-10T15:38:17.514Z] GET / - 172.20.0.5
 legacy-nginx     | 172.20.0.1 - - [10/Oct/2025:15:38:17 +0000] "GET / HTTP/1.1" 200 279 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
@@ -262,7 +262,7 @@ Open [http://localhost:80](http://localhost:80) in your browser to view the webs
 
 Refresh the page and click some 'Register' buttons and look at our logs to see the output. We should see all the various components receiving and passing traffic:
 
-```json
+```
 cyber-bay-db-cg  | 2025-10-10 15:29:49.178 UTC [1] LOG:  database system is ready to accept connections
 cg-frontend      | [2025-10-10T15:29:53.667Z] GET / - 172.20.0.5
 cg-nginx         | 172.20.0.1 - - [10/Oct/2025:15:29:53 +0000] "GET / HTTP/1.1" 200 279 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0.1 Safari/605.1.15"
