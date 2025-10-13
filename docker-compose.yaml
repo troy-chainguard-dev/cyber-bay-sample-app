@@ -1,0 +1,54 @@
+services:
+  frontend:
+    image: cyber-bay-frontend-legacy:latest
+    container_name: legacy-frontend
+    build: ./frontend
+    depends_on:
+      - backend
+
+  backend:
+    image: cyber-bay-backend-legacy:latest
+    container_name: legacy-backend
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: chaiku
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  db:
+    image: cyber-bay-db-legacy:latest
+    container_name: legacy-db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    restart: always
+    command: 
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_connections=on"
+      - "-c"
+      - "log_disconnections=on"
+    environment:
+      POSTGRES_DB: chaiku
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: cyber-bay-nginx-legacy:latest
+    container_name: legacy-nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend

@@ -1,0 +1,51 @@
+services:
+  frontend:
+    image: cyber-bay-frontend-cg:latest
+    container_name: cg-frontend
+    build: 
+      context: ./frontend
+      dockerfile: ./Dockerfile-chainguard
+    depends_on:
+      - backend
+
+  backend:
+    image: cyber-bay-backend-cg:latest
+    container_name: cg-backend
+    build: 
+      context: ./backend
+      dockerfile: ./Dockerfile-chainguard
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: chaiku
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+  db:
+    container_name: cyber-bay-db-cg
+    image: cyber-bay-db-cg:latest
+    build:
+      context: ./db
+      dockerfile: Dockerfile-chainguard
+    restart: always
+    environment:
+      POSTGRES_DB: chaiku
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_ARGS: "-c log_statement=all -c log_connections=on -c log_disconnections=on"
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: cyber-bay-nginx-cg:latest
+    container_name: cg-nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile-chainguard
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
